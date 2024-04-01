@@ -1,5 +1,3 @@
-
-from htmlnode import LeafNode, HTMLNode
 from enum import Enum
 import re
 
@@ -23,22 +21,9 @@ class TextNode:
                 self.url == other.url)
 
     def __repr__(self):
-        return f"TextNode({self.text}, {self.text_type.name}, {self.url})"
+        url = f'"{self.url}"' if self.url else str(self.url)
+        return f'TextNode("{self.text}", {self.text_type.name}, url={url})'
 
-def text_node_to_html_node(text_node:TextNode) -> HTMLNode:
-    mapping = {
-        TextType.TEXT: (LeafNode,{"value":text_node.text}),
-        TextType.BOLD: (LeafNode, {"tag":'b', "value":text_node.text}),
-        TextType.ITALIC: (LeafNode, {"tag":'i', "value":text_node.text}),
-        TextType.CODE: (LeafNode, {"tag":'code', "value":text_node.text}), 
-        TextType.LINK: (LeafNode, {"tag":'a', "value":text_node.text, "props":{"href":text_node.url}}),
-        TextType.IMAGE:(LeafNode, {"tag":'img', "value":"", "props":{"src":text_node.url, "alt":text_node.text}}),
-    }
-    if text_node.text_type in mapping:
-        f, kwargs = mapping[text_node.text_type]
-        return f(**kwargs)
-    else:
-        raise Exception(f"Text type not supported {text_node.text_type}")
 
 def split_nodes_delimiter(old_nodes:list[TextNode], delimiter:str, text_type:TextType) -> list:
     new_nodes = []

@@ -1,7 +1,8 @@
 import unittest
 
 from htmlnode import (HTMLNode, LeafNode, ParentNode, markdown_to_blocks, 
-                      block_to_block_type, BlockType, block_to_html_node)
+                      block_to_block_type, BlockType, block_to_html_node,
+                      markdown_to_html_node)
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -173,13 +174,179 @@ dfdf""",
                 "html_node": LeafNode("p", """oh nooo
 djfidjf
 dfdf""")
+            },
+            {
+                "block": "hey",
+                "type": BlockType.paragraph,
+                "html_node": LeafNode("p", "hey")
             }
         ]
         
         html_nodes = list(map(lambda d: block_to_html_node(d["block"], d["type"]), data))
         expected_html_nodes = list(map(lambda d: d["html_node"], data))
         self.assertListEqual(html_nodes, expected_html_nodes)
-        
+
+class TestMDtoHTML(unittest.TestCase):
+    def test_markdown_to_html_node_simple(self):
+        md = """
+# Hi I'm the title #1
+
+hey
+
+"""       
+        expected_html = ParentNode("div", [
+            LeafNode("h1", "Hi I'm the title #1"),
+            LeafNode("p", "hey")
+        ])
+        html = markdown_to_html_node(md)
+        self.assertEqual(html, expected_html)
+
+    def test_markdown_to_html_node_bi_in_p(self):
+        md = """
+# Hi I'm the title #1
+
+hey this is **bold** and this *italic*
+
+"""       
+        expected_html = ParentNode("div", [
+            LeafNode("h1", "Hi I'm the title #1"),
+            ParentNode("p", [
+                LeafNode(None, "hey this is "),
+                LeafNode("b", "bold"),
+                LeafNode(None, " and this "),
+                LeafNode("i", "italic")
+            ])
+        ])
+        html = markdown_to_html_node(md)
+        self.assertEqual(html, expected_html)
+
+    def test_markdown_to_html_node_imglink_in_p(self):
+        md = """
+# Hi I'm the title #1
+
+hey this is an ![image](https://i.imgur.com/zjjcJKZ.png) and this a [link](https://i.imgur.com/3elNhQu.png)!
+
+"""       
+        expected_html = ParentNode("div", [
+            LeafNode("h1", "Hi I'm the title #1"),
+            ParentNode("p", [
+                LeafNode(None, "hey this is an "),
+                LeafNode("img", "", props={"src":"https://i.imgur.com/zjjcJKZ.png", "alt":"image"}),
+                LeafNode(None, " and this a "),
+                LeafNode("a", "link", props={"href":"https://i.imgur.com/3elNhQu.png"}),
+                LeafNode(None, "!"),
+            ])
+        ])
+        html = markdown_to_html_node(md)
+        self.assertEqual(html, expected_html)
+    
+    def test_markdown_to_html_node_list(self):
+        md = """
+# Hi I'm the title #1
+
+hey
+
+* hi
+* and
+*   i'm a list"""       
+        expected_html = ParentNode("div", [
+            LeafNode("h1", "Hi I'm the title #1"),
+            LeafNode("p", "hey"),
+            ParentNode("ul", [
+                LeafNode("li", "hi"),
+                LeafNode("li", "and"),
+                LeafNode("li", "i'm a list"),
+            ])
+        ])
+        html = markdown_to_html_node(md)
+        self.assertEqual(html, expected_html)
+    
+    def test_markdown_to_html_node_list_b(self):
+        md = """
+# Hi I'm the title #1
+
+hey
+
+1. look below
+2. there is a **bold word** here
+"""       
+        expected_html = ParentNode("div", [
+            LeafNode("h1", "Hi I'm the title #1"),
+            LeafNode("p", "hey"),
+            ParentNode("ol", [
+                LeafNode("li", "look below"),
+                ParentNode("li", [
+                    LeafNode(None, "there is a "),
+                    LeafNode("b", "bold word"),
+                    LeafNode(None, " here")
+                ]),
+            ])
+        ])
+        html = markdown_to_html_node(md)
+        self.assertEqual(html, expected_html)
+
+    def test_markdown_to_html_node_code(self):
+        md = """
+# Hi I'm the title #1
+
+hey
+
+```
+# this is real code
+s, *ss = my_list
+func(*args)
+```
+"""       
+        expected_html = ParentNode("div", [
+            LeafNode("h1", "Hi I'm the title #1"),
+            LeafNode("p", "hey"),
+            LeafNode("code", """# this is real code
+s, *ss = my_list
+func(*args)"""),
+        ])
+        html = markdown_to_html_node(md)
+        self.assertEqual(html, expected_html)
+
+    def test_markdown_to_html_node_quote(self):
+        md = """
+# Hi I'm the title #1
+
+> quoting *me*
+> quoting **you** and
+> quoting `code`.
+"""       
+        expected_html = ParentNode("div", [
+            LeafNode("h1", "Hi I'm the title #1"),
+            ParentNode("blockquote", [
+                LeafNode(None, "quoting "),
+                LeafNode("i", "me"),
+                LeafNode(None, "\nquoting "),
+                LeafNode("b", "you"),
+                LeafNode(None, " and\nquoting "),
+                LeafNode("code", "code"),
+                LeafNode(None, ".")
+            ])
+        ])
+        html = markdown_to_html_node(md)
+        self.assertEqual(html, expected_html)
+
+    def test_markdown_to_html_node_h2(self):
+        md = """
+## Hi I'm the title **#1**
+
+hey
+"""       
+        expected_html = ParentNode("div", [
+            ParentNode("h2",[
+                LeafNode(None, "Hi I'm the title "),
+                LeafNode("b", "#1")
+            ] ),
+            LeafNode("p", "hey"),
+        ])
+        html = markdown_to_html_node(md)
+        self.assertEqual(html, expected_html)
+
+
 if __name__ == "__main__":
     unittest.main()
 
