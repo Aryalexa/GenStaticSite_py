@@ -27,15 +27,16 @@ class TextNode:
 
 def text_node_to_html_node(text_node:TextNode) -> HTMLNode:
     mapping = {
-        TextType.TEXT: LeafNode(value=text_node.text),
-        TextType.BOLD: LeafNode(tag='b', value=text_node.text),
-        TextType.ITALIC: LeafNode(tag='i', value=text_node.text),
-        TextType.CODE: LeafNode(tag='code', value=text_node.text), 
-        TextType.LINK: LeafNode(tag='a', value=text_node.text, props={"href":text_node.url}),
-        TextType.IMAGE: LeafNode(tag='img', value="", props={"src":text_node.url, "alt":text_node.text}),
+        TextType.TEXT: (LeafNode,{"value":text_node.text}),
+        TextType.BOLD: (LeafNode, {"tag":'b', "value":text_node.text}),
+        TextType.ITALIC: (LeafNode, {"tag":'i', "value":text_node.text}),
+        TextType.CODE: (LeafNode, {"tag":'code', "value":text_node.text}), 
+        TextType.LINK: (LeafNode, {"tag":'a', "value":text_node.text, "props":{"href":text_node.url}}),
+        TextType.IMAGE:(LeafNode, {"tag":'img', "value":"", "props":{"src":text_node.url, "alt":text_node.text}}),
     }
     if text_node.text_type in mapping:
-        return mapping[text_node.text_type]
+        f, kwargs = mapping[text_node.text_type]
+        return f(**kwargs)
     else:
         raise Exception(f"Text type not supported {text_node.text_type}")
 

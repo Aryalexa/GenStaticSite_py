@@ -1,6 +1,9 @@
 import unittest
 
-from textnode import TextNode, TextType, split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_links, text_to_textnodes
+from textnode import (
+	TextNode, TextType, split_nodes_delimiter, extract_markdown_images, 
+    extract_markdown_links, split_nodes_image, split_nodes_links, text_to_textnodes
+)
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
@@ -13,10 +16,10 @@ class TestTextNode(unittest.TestCase):
         self.assertNotEqual(node, node2)
 
 class TestSplitNodes(unittest.TestCase):
-    def assertListEqual(self, nodes, expected_nodes):
-        self.assertEqual(len(nodes), len(expected_nodes))
-        for n, en in zip(nodes, expected_nodes):
-            self.assertEqual(n, en)
+    # def assertListEqual(self, nodes, expected_nodes):
+    #     self.assertEqual(len(nodes), len(expected_nodes))
+    #     for n, en in zip(nodes, expected_nodes):
+    #         self.assertEqual(n, en)
 
     # def test_splitdel_nothing(self):
     #     node = "This is just text and not a TextNode."
@@ -128,6 +131,15 @@ class TestSplitNodes(unittest.TestCase):
         ]
         self.assertListEqual(nodes, expected_nodes)
 
+    def test_text_to_textnodes_simple(self):
+        text = 'This is a simple line'
+        nodes = text_to_textnodes(text)
+        expected_nodes = [
+            TextNode("This is a simple line", TextType.TEXT)
+        ]
+        self.assertListEqual(nodes, expected_nodes)
+
+
 class TestExtractMD(unittest.TestCase):
     def test_extract_images(self):
         text = "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and ![another](https://i.imgur.com/dfsdkjfd.png)"
@@ -143,7 +155,6 @@ class TestExtractMD(unittest.TestCase):
         self.assertEqual(len(links), len(expected_links))
         for lnk, elnk in zip(links, expected_links):
             self.assertEqual(lnk, elnk)
-
 
 if __name__ == "__main__":
     unittest.main()
