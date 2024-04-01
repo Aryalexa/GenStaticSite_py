@@ -36,8 +36,8 @@ class HTMLNode:
                 self.children == other.children and
                 self.props == other.props)
 	def __repr__(self) -> str:
-		tag = f'"{self.tag}"' if self.tag else str(self.tag)
-		value = f'"{self.value}"' if self.value else str(self.value)
+		tag = f'"{self.tag}"' if self.tag is not None else str(self.tag)
+		value = f'"{self.value}"' if self.value is not None else str(self.value)
 
 		return f'HTMLNode(tag:{tag}, value:{value}, children:{self.children}, props:{self.props})'
 
@@ -46,8 +46,8 @@ class LeafNode(HTMLNode):
 		assert value is not None, f"Value required"
 		super().__init__(tag=tag, value=value, props=props)
 	def to_html(self) -> str:
-		if not self.value:
-			raise ValueError("No value found")
+		if self.value is None:
+			raise ValueError("No value found", self)
 		if not self.tag:
 			return self.value
 		return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"

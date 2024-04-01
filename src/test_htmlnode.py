@@ -24,6 +24,10 @@ class TestLeafNode(unittest.TestCase):
         node = LeafNode("a", "Click me!", {"href": "https://www.google.com"})
         html = '<a href="https://www.google.com">Click me!</a>'
         self.assertEqual(node.to_html(), html)
+    def test_to_html_img(self):
+        node = LeafNode("img", "", {"src": "/images/rivendell.png", "alt":"LOTR image artistmonkeys"})
+        html = '<img src="/images/rivendell.png" alt="LOTR image artistmonkeys"></img>'
+        self.assertEqual(node.to_html(), html)
 
 class TestParentNode(unittest.TestCase):
     def test_to_html1(self):
