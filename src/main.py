@@ -14,10 +14,7 @@ def copy_directory(src_dir:str, dst_dir:str):
     if os.path.exists(dst_dir):
         shutil.rmtree(dst_dir)
     if not os.path.exists(dst_dir):
-        parent = os.path.dirname(dst_dir)
-        if not os.path.exists(parent):
-            raise Exception('destination parent directory does not exist.')
-        os.mkdir(dst_dir)
+        create_dir(dst_dir)
     contents = os.listdir(src_dir)
     for file_or_dir in contents:
         content_src_dir = os.path.join(src_dir, file_or_dir)
@@ -64,10 +61,27 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path, 'w') as dest_file:
         dest_file.write(template)
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    if not os.path.exists(dir_path_content):
+        raise Exception(f'content directory not found {dir_path_content}')
+    if not os.path.exists(template_path):
+        raise Exception(f'template directory not found {template_path}')
+    if not os.path.exists(dest_dir_path):
+        create_dir(dest_dir_path)
+    contents = os.listdir(dir_path_content)
+    for file_or_dir in contents:
+        content_src_dir = os.path.join(dir_path_content, file_or_dir)
+        content_dst_dir = os.path.join(dest_dir_path, file_or_dir)
+        if os.path.isfile(content_src_dir):
+            if file_or_dir.split(".")[-1] == 'md':
+                generate_page(content_src_dir, template_path, content_dst_dir[:-len(".md")]+".html")
+        else:
+            generate_pages_recursive(content_src_dir, template_path, content_dst_dir)
+
 def main():
     print('Hello')
     copy_directory("./static", "./public")
-    generate_page("./content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content", "template.html", "public")
     print("done")
 
 if __name__ == "__main__":
